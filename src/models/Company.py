@@ -1,4 +1,5 @@
-from .extensions import db
+from .extensions import db#, ma
+from marshmallow_sqlalchemy import SQLAlchemySchema
 
 class Company(db.Model):
     __tablename__ = 'tbl_company'
@@ -10,3 +11,7 @@ class Company(db.Model):
 
     def __repr__(self):
         return '<id {}>'.format(self.id)
+    
+class CompanySchema(SQLAlchemySchema):
+    class Meta:
+        fields = ("id", "company_name", "company_type")

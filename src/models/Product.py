@@ -1,4 +1,5 @@
 from .extensions import db
+from marshmallow_sqlalchemy import SQLAlchemySchema
 
 class Product(db.Model):
     __tablename__ = 'tbl_products'
@@ -12,3 +13,7 @@ class Product(db.Model):
 
     def __repr__(self):
         return '<id {}>'.format(self.id)
+
+class ProductSchema(SQLAlchemySchema):
+    class Meta:
+        fields = ("id", "product_name", "power", "quantity", "company_id")
