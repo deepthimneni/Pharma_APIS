@@ -3,17 +3,17 @@ from src.models.Product import Product, ProductSchema
 from src.models.Company import Company
 from src.models.extensions import db,docs
 from flask_apispec import use_kwargs, marshal_with
-
+from webargs import fields
 
 products_blueprint = Blueprint("products_blueprint", __name__) #blueprint creation
 
-product_schema = ProductSchema()
-
 @products_blueprint.route("/", methods=["GET"])
-@marshal_with(ProductSchema(many=True),code =200)
-def get_products():
-    product_name = request.args.get("product_name")
-    company_id = request.args.get("company_id")
+@marshal_with(ProductSchema(many=True))
+@use_kwargs({'product_name': fields.Str(), "company_id": fields.Str()}, location='query')
+def get_products(**kwargs):
+    
+    product_name = kwargs.get('product_name')
+    company_id = kwargs.get('company_id')
 
     result = db.session.query(*[c for c in Product.__table__.c], Company.company_name).\
         join(Company, Product.company_id == Company.id)
@@ -30,6 +30,6 @@ def get_products():
     if len(d) > 0:
         result = result.filter(*d)
 
-    return product_schema.dumps(result.all(), many=True)
+    return result.all()
 
 docs.register(get_products, blueprint=products_blueprint.name)
