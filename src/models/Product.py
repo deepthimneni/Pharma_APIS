@@ -1,5 +1,7 @@
 from .extensions import db
-from marshmallow_sqlalchemy import SQLAlchemySchema
+from marshmallow_sqlalchemy import SQLAlchemySchema, ModelSchema
+from marshmallow_sqlalchemy.fields import Nested
+from .Company import CompanySchema
 
 class Product(db.Model):
     __tablename__ = 'tbl_products'
@@ -15,5 +17,7 @@ class Product(db.Model):
         return '<id {}>'.format(self.id)
 
 class ProductSchema(SQLAlchemySchema):
-    class Meta:
-        fields = ("id", "product_name", "power", "quantity", "company_id")
+    class Meta(SQLAlchemySchema.Meta):
+        fields = ("id", "product_name", "power", "quantity", "company_id", "company_name")
+        model = Product
+        sqla_session = db.session

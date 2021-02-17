@@ -1,5 +1,6 @@
 from .extensions import db#, ma
-from marshmallow_sqlalchemy import SQLAlchemySchema
+from marshmallow_sqlalchemy import SQLAlchemySchema, ModelSchema
+from src.models.extensions import db,docs
 
 class Company(db.Model):
     __tablename__ = 'tbl_company'
@@ -13,5 +14,7 @@ class Company(db.Model):
         return '<id {}>'.format(self.id)
     
 class CompanySchema(SQLAlchemySchema):
-    class Meta:
+    class Meta(SQLAlchemySchema.Meta):
         fields = ("id", "company_name", "company_type")
+        model = Company
+        sqla_session = db.session
