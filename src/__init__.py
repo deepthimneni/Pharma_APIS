@@ -9,6 +9,7 @@ from .company.company_blueprint import company_blueprint
 from flask_cors import CORS
 from apispec import APISpec
 from apispec.ext.marshmallow import MarshmallowPlugin
+from .users.login_blueprint import login_authentication
 
 app = Flask(__name__)
 CORS(app)
@@ -41,6 +42,7 @@ from .models.Product import Product
 app.register_blueprint(register_blueprint, url_prefix="/api/user")
 app.register_blueprint(products_blueprint, url_prefix="/api/products")
 app.register_blueprint(company_blueprint, url_prefix="/api/company")
+app.register_blueprint(login_blueprint, url_prefix="/api")
 
 docs.init_app(app)
 
