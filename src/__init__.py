@@ -42,7 +42,7 @@ from .models.Product import Product
 app.register_blueprint(register_blueprint, url_prefix="/api/user")
 app.register_blueprint(products_blueprint, url_prefix="/api/products")
 app.register_blueprint(company_blueprint, url_prefix="/api/company")
-app.register_blueprint(login_blueprint, url_prefix="/api")
+app.register_blueprint(login_authentication, url_prefix="/api")
 
 docs.init_app(app)
 

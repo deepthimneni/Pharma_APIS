@@ -1,16 +1,20 @@
 from flask import Blueprint, request, Response, jsonify
 from src.models.Product import Product, ProductSchema
 from src.models.Company import Company
-from src.models.extensions import db,docs
-from flask_apispec import use_kwargs, marshal_with
+from src.models.extensions import db,docs, ErrorSchema
+from flask_apispec import use_kwargs, marshal_with, doc
 from webargs import fields
+from src.utils.Utils import token_required
 
 products_blueprint = Blueprint("products_blueprint", __name__) #blueprint creation
 
 @products_blueprint.route("/", methods=["GET"])
-@marshal_with(ProductSchema(many=True))
+@marshal_with(ProductSchema(many=True), code=200)
+@marshal_with(ErrorSchema, code=401)
 @use_kwargs({'product_name': fields.Str(), "company_id": fields.Str()}, location='query')
-def get_products(**kwargs):
+@doc(tags=['Product Queries'])
+@token_required
+def get_products(current_user, **kwargs):
     
     product_name = kwargs.get('product_name')
     company_id = kwargs.get('company_id')

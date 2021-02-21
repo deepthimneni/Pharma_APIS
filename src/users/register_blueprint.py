@@ -1,12 +1,16 @@
 from flask import Blueprint, request, Response, jsonify
 from src.models.User import User
 from src.utils.Utils import generate_salt, generate_hash
-from flask_apispec import use_kwargs, marshal_with
+from flask_apispec import use_kwargs, marshal_with, doc
+from src.models.extensions import ErrorSchema, docs
+from webargs import fields
 
 register_blueprint = Blueprint("register_blueprint", __name__) #blueprint creation
 
-@register_blueprint.route("/register", methods=("POST"))
-@marshal_with(UserSchema(many=True))
+@register_blueprint.route("/register", methods=["POST"])
+@marshal_with(None, code = 201)
+@marshal_with(ErrorSchema, code = 400)
+@doc(tags=['User Actions'])
 @use_kwargs({'user_name': fields.Str(),  
             "shop_name":fields.Str(),
             "drug_licence_1":fields.Str(),
@@ -20,10 +24,12 @@ def register_user(**kwargs):
     error_message = validate_user_input(kwargs)
 
     if error_message :
-        return Response(error_message, status = 400)
+        # return Response({'error_msg':error_message}, status = 400)
+        return {'error_msg':error_message}
     else:
         user_record= User.query.filter(User.user_name == kwargs.get("user_name")).first()
-        if user_record: return Response("User Name already exists", 400)
+        if user_record: #return Response({'error_msg':"User Name already exists"}, status = 400)
+            return {'error_msg':"User Name already exists"}
 
         password_salt = generate_salt()
         password_hash = generate_hash(kwargs.get("password"), password_salt)
@@ -39,7 +45,7 @@ def register_user(**kwargs):
                         password_salt=password_salt)
         db.session.add(new_user)  # Adds new User record to kwargs.getbase
         db.session.commit()  # Commits all changes
-        return Response(status=201)
+        return
 
 def validate_user_input(kwargs):
     if not(kwargs.get("user_name")):
@@ -48,4 +54,4 @@ def validate_user_input(kwargs):
         return "Need to enter password"
     else:
         return ""
-docs.register(get_users, blueprint=register_blueprint.name)
+docs.register(register_user, blueprint=register_blueprint.name)
