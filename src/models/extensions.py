@@ -10,9 +10,7 @@ db = SQLAlchemy()
 
 # ma = Marshmallow()
 class ErrorSchema(SQLAlchemySchema):
-    class Meta(SQLAlchemySchema.Meta):
-        error_msg = fields.Str()
+    error_msg = fields.Str()
 
 class LoginSchema(SQLAlchemySchema):
-    class Meta(SQLAlchemySchema.Meta):
-        jwt_token = fields.Str()
+    jwt_token = fields.Str()

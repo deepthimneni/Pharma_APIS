@@ -2,13 +2,13 @@ from flask import Blueprint, request, Response, jsonify
 from src.models.User import User
 from src.utils.Utils import generate_salt, generate_hash
 from flask_apispec import use_kwargs, marshal_with, doc
-from src.models.extensions import ErrorSchema, docs
+from src.models.extensions import ErrorSchema, docs, db
 from webargs import fields
 
 register_blueprint = Blueprint("register_blueprint", __name__) #blueprint creation
 
-@register_blueprint.route("/register", methods=["POST"])
-@marshal_with(None, code = 201)
+@register_blueprint.route("/register", methods=["POST"], provide_automatic_options=False)
+@marshal_with(None, code = 201, apply=False)
 @marshal_with(ErrorSchema, code = 400)
 @doc(tags=['User Actions'])
 @use_kwargs({'user_name': fields.Str(),  
@@ -25,11 +25,11 @@ def register_user(**kwargs):
 
     if error_message :
         # return Response({'error_msg':error_message}, status = 400)
-        return {'error_msg':error_message}
+        return {'error_msg':error_message}, 400
     else:
         user_record= User.query.filter(User.user_name == kwargs.get("user_name")).first()
         if user_record: #return Response({'error_msg':"User Name already exists"}, status = 400)
-            return {'error_msg':"User Name already exists"}
+            return {'error_msg':"User Name already exists"}, 400
 
         password_salt = generate_salt()
         password_hash = generate_hash(kwargs.get("password"), password_salt)
@@ -45,7 +45,7 @@ def register_user(**kwargs):
                         password_salt=password_salt)
         db.session.add(new_user)  # Adds new User record to kwargs.getbase
         db.session.commit()  # Commits all changes
-        return
+        return None, 201
 
 def validate_user_input(kwargs):
     if not(kwargs.get("user_name")):

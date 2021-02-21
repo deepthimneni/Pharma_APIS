@@ -8,10 +8,11 @@ from src.utils.Utils import token_required
 
 products_blueprint = Blueprint("products_blueprint", __name__) #blueprint creation
 
-@products_blueprint.route("/", methods=["GET"])
+@products_blueprint.route("/", methods=["GET"], provide_automatic_options=False)
 @marshal_with(ProductSchema(many=True), code=200)
 @marshal_with(ErrorSchema, code=401)
 @use_kwargs({'product_name': fields.Str(), "company_id": fields.Str()}, location='query')
+@use_kwargs({'x-access-token': fields.Str()}, location='headers')
 @doc(tags=['Product Queries'])
 @token_required
 def get_products(current_user, **kwargs):
@@ -34,6 +35,6 @@ def get_products(current_user, **kwargs):
     if len(d) > 0:
         result = result.filter(*d)
 
-    return result.all()
+    return result.all(), 200
 
 docs.register(get_products, blueprint=products_blueprint.name)

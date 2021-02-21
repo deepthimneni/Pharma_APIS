@@ -1,16 +1,16 @@
 from flask import Blueprint, request, Response, jsonify
 from src.models.User import User
-from src.utils.Utils import generate_salt, generate_hash
+from src.utils.Utils import generate_salt, generate_hash, generate_jwt_token
 from flask_apispec import use_kwargs, marshal_with, doc
 from src.models.extensions import ErrorSchema, docs, LoginSchema
 from webargs import fields
-
+from datetime import datetime, timedelta
 login_authentication = Blueprint("login_authentication", __name__)
 
-@login_authentication.route("/login", methods=["POST"])
+@login_authentication.route("/login", methods=["POST"], provide_automatic_options=False)
 @marshal_with(LoginSchema, code = 200)
 @marshal_with(ErrorSchema, code = 401)
-@marshal_with(None, code = 400)
+@marshal_with(None, code = 400, apply=False)
 @doc(tags=['User Actions'])
 @use_kwargs({'user_name': fields.Str(),  
             "password":fields.Str()})
@@ -25,13 +25,16 @@ def login_auth(**kwargs):
             password_hash = generate_hash(password, record.password_salt)
             if (password_hash == record.password_hash):
                 user_id = record.id
-                jwt_token = generate_jwt_token({"id": user_id})
-                return {"jwt_token": jwt_token}
+                jwt_token = generate_jwt_token({
+                    "id": user_id,
+                    'exp' : datetime.utcnow() + timedelta(minutes = 30) 
+                })
+                return {"jwt_token": jwt_token}, 200
             else:
-                return  {"error_msg": "Password incorrect"}
+                return  {"error_msg": "Password incorrect"}, 401
         else:
-            return  {"error_msg": "Users not found"}
+            return  {"error_msg": "Users not found"}, 401
     else:
-        return
+        return None, 400
 
 docs.register(login_auth, blueprint=login_authentication.name)
